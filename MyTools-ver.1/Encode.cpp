@@ -15,7 +15,7 @@ namespace MyTools {
 		namespace ShiftJis {
 			std::wstring Unicode(std::string src) {
 				std::size_t converted{};
-				std::vector<wchar_t> dest(src.size() + 1, L'\0');
+				std::vector<wchar_t> dest(src.capacity() + 1, L'\0');
 				if (::_mbstowcs_s_l(&converted, dest.data(), dest.size(), src.data(), dest.size(), ::_create_locale(LC_ALL, "jpn")) != 0) {
 					throw std::system_error{ errno, std::system_category() };
 				}
@@ -48,7 +48,7 @@ namespace MyTools {
 			std::string ShiftJis(std::wstring src) {
 				int error;
 				std::size_t converted{};
-				std::vector<char> dest(src.size() * 2, '\0');
+				std::vector<char> dest((src.capacity() * 2) +1, '\0');
 				if (error = ::_wcstombs_s_l(&converted, dest.data(), dest.size(), src.data(), dest.size(), ::_create_locale(LC_ALL, "jpn")) != 0) {
 					throw std::system_error{ errno, std::system_category() };
 				}
