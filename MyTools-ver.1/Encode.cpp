@@ -13,11 +13,11 @@ namespace MyTools {
 	namespace Encode {
 
 		namespace ShiftJis {
-			std::wstring Unicode(std::string src) {
-				std::size_t converted{};
-				std::vector<wchar_t> dest(src.capacity() + 1, L'\0');
-				if (::_mbstowcs_s_l(&converted, dest.data(), dest.size(), src.data(), dest.size(), ::_create_locale(LC_ALL, "jpn")) != 0) {
-					throw std::system_error{ errno, std::system_category() };
+			std::wstring Unicode(std::string const& src) {
+				auto const dest_size = ::MultiByteToWideChar(CP_ACP, 0U, src.data(), -1, nullptr, 0U);
+				std::vector<wchar_t> dest(dest_size, L'\0');
+				if (::MultiByteToWideChar(CP_ACP, 0U, src.data(), -1, dest.data(), dest.size()) == 0) {
+					throw std::system_error{ static_cast<int>(::GetLastError()), std::system_category() };
 				}
 				dest.resize(std::char_traits<wchar_t>::length(dest.data()));
 				dest.shrink_to_fit();
@@ -45,12 +45,11 @@ namespace MyTools {
 				std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 				return converter.to_bytes(src);
 			}
-			std::string ShiftJis(std::wstring src) {
-				int error;
-				std::size_t converted{};
-				std::vector<char> dest((src.capacity() * 2) +1, '\0');
-				if (error = ::_wcstombs_s_l(&converted, dest.data(), dest.size(), src.data(), dest.size(), ::_create_locale(LC_ALL, "jpn")) != 0) {
-					throw std::system_error{ errno, std::system_category() };
+			std::string ShiftJis(std::wstring const& src) {
+				auto const dest_size = ::WideCharToMultiByte(CP_ACP, 0U, src.data(), -1, nullptr, 0, nullptr, nullptr);
+				std::vector<char> dest(dest_size, '\0');
+				if (::WideCharToMultiByte(CP_ACP, 0U, src.data(), -1, dest.data(), dest.size(), nullptr, nullptr) == 0) {
+					throw std::system_error{ static_cast<int>(::GetLastError()), std::system_category() };
 				}
 				dest.resize(std::char_traits<char>::length(dest.data()));
 				dest.shrink_to_fit();
